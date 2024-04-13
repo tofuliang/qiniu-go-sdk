@@ -239,6 +239,35 @@ type LogDomainInfo struct {
 	URL          string `json:"url"`
 }
 
+type TopRequest struct {
+	Region    string   `json:"region"`
+	StartDate string   `json:"startDate"`
+	EndDate   string   `json:"endDate"`
+	Domains   []string `json:"domains"`
+}
+
+type TrafficIp struct {
+	Traffic []int64  `json:"traffic"`
+	Ips     []string `json:"ips"`
+}
+
+type CountIp struct {
+	Count []int64  `json:"count"`
+	Ips   []string `json:"ips"`
+}
+
+type TopTrafficIpsResp struct {
+	Code  int       `json:"code"`
+	Error string    `json:"error"`
+	Data  TrafficIp `json:"data,omitempty"`
+}
+
+type TopCountIpsResp struct {
+	Code  int     `json:"code"`
+	Error string  `json:"error"`
+	Data  CountIp `json:"data,omitempty"`
+}
+
 // GetCdnLogList 获取CDN域名访问日志的下载链接
 func (m *CdnManager) GetCdnLogList(day string, domains []string) (
 	listLogResult ListLogResult, err error) {
@@ -264,6 +293,48 @@ func (m *CdnManager) GetCdnLogList(day string, domains []string) (
 		return
 	}
 
+	return
+}
+
+func (m *CdnManager) TopTrafficIps(startDate, endDate, region string, domains []string) (topTrafficIps TopTrafficIpsResp, err error) {
+	reqBody := TopRequest{
+		Region:    region,
+		StartDate: startDate,
+		EndDate:   endDate,
+		Domains:   domains,
+	}
+
+	resData, reqErr := postRequest(m.mac, "/v2/tune/loganalyze/toptrafficip", reqBody)
+	if reqErr != nil {
+		err = reqErr
+		return
+	}
+	umErr := json.Unmarshal(resData, &topTrafficIps)
+	if umErr != nil {
+		err = umErr
+		return
+	}
+	return
+}
+
+func (m *CdnManager) TopCountIps(startDate, endDate, region string, domains []string) (topCountIps TopCountIpsResp, err error) {
+	reqBody := TopRequest{
+		Region:    region,
+		StartDate: startDate,
+		EndDate:   endDate,
+		Domains:   domains,
+	}
+
+	resData, reqErr := postRequest(m.mac, "/v2/tune/loganalyze/topcountip", reqBody)
+	if reqErr != nil {
+		err = reqErr
+		return
+	}
+	umErr := json.Unmarshal(resData, &topCountIps)
+	if umErr != nil {
+		err = umErr
+		return
+	}
 	return
 }
 
